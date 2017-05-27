@@ -57,40 +57,8 @@ double integration(double x0, double x, double y0, double y, int m, double pr) {
 //    return *r+result;
 //}
 
-template <class T>
-T get_param(string key, map<string, string> myMap) {
-    istringstream ss(myMap[key]);
-    T val;
-    ss >> val;
-    return val;
-}
-
-map<string, string> read_config(string filename) {
-    string line, delimiter;
-    ifstream myfile (filename.c_str());
-    map<string, string> mp;
-
-    delimiter = "=";
 
 
-    if (myfile.is_open())
-    {
-        while (getline(myfile,line))
-        {
-            int pos = line.find(delimiter);
-            string key = line.substr(0, pos);
-            string value = line.substr(pos + 1);
-            mp[key] = value;
-        }
-
-        myfile.close();
-    }
-    else {
-        cout << "Error with opening the file!" << endl;
-    }
-    return mp;
-
-};
 
 
 int main()
