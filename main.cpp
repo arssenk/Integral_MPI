@@ -67,7 +67,7 @@ T get_param(string key, map<string, string> myMap) {
 
 map<string, string> read_config(string filename) {
     string line, delimiter;
-    ifstream myfile (filename);
+    ifstream myfile (filename.c_str());
     map<string, string> mp;
 
     delimiter = "=";
