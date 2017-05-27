@@ -11,9 +11,6 @@
 using namespace std;
 
 
-
-template<class D>
-
 double func_calculation(int m, double x1, double x2) {
     double sum1 = 0;
     double sum2 = 0;
