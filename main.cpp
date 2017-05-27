@@ -97,7 +97,6 @@ int main()
 {
     int commsize, rank, len;
     char procname[MPI_MAX_PROCESSOR_NAME];
-
     MPI_Init(NULL, NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &commsize);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -111,14 +110,14 @@ int main()
 
         int m;
         if (mp.size() != 0) {
-            abs_er = get_param<double>("absol_er", mp);
-            rel_er = get_param<double>("rel_er", mp);
-            x0 = get_param<double>("x0", mp);
-            x1 = get_param<double>("x1", mp);
-            y0 = get_param<double>("y0", mp);
-            y1 = get_param<double>("y1", mp);
-            m = get_param<int>("m", mp);
-            //
+            abs_er = 0.001;
+            rel_er = 0.001;
+            x0 = 0;
+            x1 = 3;
+            y0 = 0;
+            y1 = 1;
+            m = 5;
+//            //
             // num_of_threads = get_param<int>("threads", mp);
 
             //thread threads[num_of_threads];
