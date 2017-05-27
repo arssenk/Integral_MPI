@@ -2,32 +2,17 @@
 #include <fstream>
 #include <cmath>
 #include <assert.h>
-#include <mutex>
-#include <thread>
 #include <map>
 
-#include <string>
 #include <sstream>
 
 #include <mpi.h>
 
 using namespace std;
 
-mutex mx;
 
-inline std::chrono::high_resolution_clock::time_point get_current_time_fenced()
-{
-    std::atomic_thread_fence(memory_order_seq_cst);
-    auto res_time = std::chrono::high_resolution_clock::now();
-    std::atomic_thread_fence(memory_order_seq_cst);
-    return res_time;
-}
 
 template<class D>
-inline long long to_us(const D& d)
-{
-    return std::chrono::duration_cast<chrono::microseconds>(d).count();
-}
 
 double func_calculation(int m, double x1, double x2) {
     double sum1 = 0;
@@ -127,7 +112,7 @@ int main()
         map<string, string> mp = read_config(filename);
         double abs_er, rel_er, x0, x1, y0, y1;
 
-        int m, num_of_threads;
+        int m;
         if (mp.size() != 0) {
             abs_er = get_param<double>("absol_er", mp);
             rel_er = get_param<double>("rel_er", mp);
@@ -136,14 +121,15 @@ int main()
             y0 = get_param<double>("y0", mp);
             y1 = get_param<double>("y1", mp);
             m = get_param<int>("m", mp);
-            num_of_threads = get_param<int>("threads", mp);
+            //
+            // num_of_threads = get_param<int>("threads", mp);
 
-            thread threads[num_of_threads];
+            //thread threads[num_of_threads];
 
             double pr = 1E-3;
 
             double integral = 0;
-            double interval_x = (x1 - x0) / num_of_threads;
+            double interval_x = (x1 - x0) / 2;
             double x = x0;
             cout << "  Calculating...\n" << endl;
             double step1 = 1E-3;
