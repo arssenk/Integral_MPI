@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 
+#include <mpi.h>
 
 using namespace std;
 
@@ -29,29 +30,29 @@ inline long long to_us(const D& d)
 }
 
 double func_calculation(int m, double x1, double x2) {
-//    double sum1 = 0;
-//    double sum2 = 0;
-//    double g;
-//    for (int i = 1; i <= m; ++i)
-//    {
-//        sum1 += i * cos((i + 1) * x1 + 1);
-//        sum2 += i * cos((i + 1) * x2 + 1);
-//    }
-//
-//    g = - sum1 * sum2;
-//
-//    return g;
-    double g,sum;
-    int j;
-    for (int i = -2; i <= 2; ++i)
+    double sum1 = 0;
+    double sum2 = 0;
+    double g;
+    for (int i = 1; i <= m; ++i)
     {
-        j = i;
-        sum += 1 / (5 * (i + 2) + j + 3 + pow(x1 - 16* j,6) + pow(x2 - 16* i,6));
+        sum1 += i * cos((i + 1) * x1 + 1);
+        sum2 += i * cos((i + 1) * x2 + 1);
     }
 
-    g = pow(0.002 + sum, -1);
+    g = - sum1 * sum2;
 
     return g;
+//    double g,sum;
+//    int j;
+//    for (int i = -2; i <= 2; ++i)
+//    {
+//        j = i;
+//        sum += 1 / (5 * (i + 2) + j + 3 + pow(x1 - 16* j,6) + pow(x2 - 16* i,6));
+//    }
+//
+//    g = pow(0.002 + sum, -1);
+//
+//    return g;
 
 }
 
@@ -66,12 +67,13 @@ double integration(double x0, double x, double y0, double y, int m, double pr) {
     return sum;
 }
 
-void thread_integration(double x0, double x, double y0, double y, int m, double pr, double* r) {
-
-    auto result = integration(x0, x, y0, y, m, pr);
-    lock_guard<mutex> lg(mx);
-    *r += result;
-}
+//double thread_integration(double x0, double x, double y0, double y, int m, double pr, ) {
+//
+//    auto result = integration(x0, x, y0, y, m, pr);
+//    lock_guard<mutex> lg(mx);
+//    *r += result;
+//    return *r+result;
+//}
 
 template <class T>
 T get_param(string key, map<string, string> myMap) {
@@ -111,89 +113,113 @@ map<string, string> read_config(string filename) {
 
 int main()
 {
-    string filename;
-//    cout << "Please enter name of configuration file with extension '.txt':";
-//    cin >> filename;
-    filename = "config.txt";
-    map<string, string> mp = read_config(filename);
-    double abs_er, rel_er, x0, x1, y0, y1;
-    int m, num_of_threads;
-    if (mp.size() != 0) {
-        abs_er = get_param<double>("absol_er", mp);
-        rel_er = get_param<double>("rel_er", mp);
-        x0 = get_param<double>("x0", mp);
-        x1 = get_param<double>("x1", mp);
-        y0 = get_param<double>("y0", mp);
-        y1 = get_param<double>("y1", mp);
-        m = get_param<int>("m", mp);
-        num_of_threads = get_param<int>("threads", mp);
+    int commsize, rank, len;
+    char procname[MPI_MAX_PROCESSOR_NAME];
 
-        thread threads[num_of_threads];
-        double pr = 1E-3;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &commsize);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Get_processor_name(procname, &len);
 
-        double integral = 0;
-        double interval_x = (x1 - x0) / num_of_threads;
-        double x = x0;
-        cout << "  Calculating...\n" << endl;
-        double step1 = 1E-3;
-        double step2 = step1 / 2.0;
-        double integral1 = 0, integral2 = 0;
-        double j = x, l = x;
+    if (rank == 0){
+        string filename;
+        filename = "config.txt";
+        map<string, string> mp = read_config(filename);
+        double abs_er, rel_er, x0, x1, y0, y1;
 
-        while (j < x1) {
-            integral1 += integration(j, j + step1, y0, y1, m, pr);
-            j += step1;
+        int m, num_of_threads;
+        if (mp.size() != 0) {
+            abs_er = get_param<double>("absol_er", mp);
+            rel_er = get_param<double>("rel_er", mp);
+            x0 = get_param<double>("x0", mp);
+            x1 = get_param<double>("x1", mp);
+            y0 = get_param<double>("y0", mp);
+            y1 = get_param<double>("y1", mp);
+            m = get_param<int>("m", mp);
+            num_of_threads = get_param<int>("threads", mp);
+
+            thread threads[num_of_threads];
+
+            double pr = 1E-3;
+
+            double integral = 0;
+            double interval_x = (x1 - x0) / num_of_threads;
+            double x = x0;
+            cout << "  Calculating...\n" << endl;
+            double step1 = 1E-3;
+            double step2 = step1 / 2.0;
+            double integral1 = 0, integral2 = 0;
+            double j = x, l = x;
+
+            while (j < x1) {
+                integral1 += integration(j, j + step1, y0, y1, m, pr);
+                j += step1;
+            }
+
+            while (l < x1) {
+                integral2 += integration(l, l + step2, y0, y1, m, pr);
+                l += step2;
+            }
+
+            double abs_dif = abs(integral1 - integral2);
+            double rel_dif = abs((integral1 - integral2) / max(integral1, integral2));
+
+            if (abs_dif <= abs_er)
+                cout << "| Absolute error is okay\t";
+            else
+                cout << "| Absolute error is not okay\t";
+
+            cout << abs_dif << " vs " << abs_er << endl;
+
+            if (rel_dif <= rel_er)
+                cout << "| Relative error is okay\t";
+            else
+                cout << "| Relative error is not okay\t";
+            cout << rel_dif << " vs " << rel_er << endl;
+            unsigned double from_to[] = {x0, x1/commsize, y0, y1/commsize, m/commsize, pr};
+            double start_time = MPI_Wtime();
+            for(int i = 1; i<commsize; ++i)
+            {
+                printf("%2i: X:%10i - %10i; Y:%10i - %10i. M/commsize: %10i\n", i, from_to[0], from_to[1], from_to[2], from_to[3], from_to[4]);
+                MPI_Send(from_to, 6, MPI_UNSIGNED_DOUBLE, i, 0, MPI_COMM_WORLD);
+                from_to[0] = from_to[1]; //Може треба додавати 0.0001
+                from_to[1] = from_to[0] + x1/commsize;
+                from_to[2] = from_to[3];
+                from_to[3] = from_to[2] + y1/commsize;
+                from_to[4] = from_to[4] + from_to[4];
+            }
+#ifdef PRINT_PARTS
+            printf("%2i: %10i - %10i\n", 0, from_to[0], max_number);
+#endif // PRINT_PARTS
+            double  res = integration(from_to[0], from_to[1]*commsize, from_to[2], from_to[3] * commsize,
+                                      (int) (from_to[4] * commsize), pr);//Cast not shure
+#ifdef PRINT_PARTS
+            printf("Recv from %2i: %10i\n", 0, res);
+
+#endif // PRINT_PARTS
+            for(int i = 1; i<commsize; ++i)
+            {
+                unsigned double tr;
+                MPI_Recv(&tr, 1, MPI_UNSIGNED_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+#ifdef PRINT_PARTS
+                printf("Recv from %2i: %10i\n", i, tr);
+#endif // PRINT_PARTS
+
+                res += tr;
+            }
+            printf("Result: %10i\n", res);
+            printf("Total time: %g \n",   MPI_Wtime() - start_time);
+    }else
+        {
+            double start_time = MPI_Wtime();
+            unsigned double from_to[5]= {};
+            MPI_Recv(from_to, 6, MPI_UNSIGNED_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            res = integration(from_to[0], from_to[1], from_to[2], from_to[3], from_to[4], from_to[5]);
+            MPI_Send(&res, 1, MPI_UNSIGNED_DOUBLE, 0, 0, MPI_COMM_WORLD);
+            printf("Process %d/%d execution time: %.6f\n", rank, commsize, MPI_Wtime() - start_time);
         }
 
-        while (l < x1) {
-            integral2 += integration(l, l + step2, y0, y1, m, pr);
-            l += step2;
-        }
-
-        double abs_dif = abs(integral1 - integral2);
-        double rel_dif = abs((integral1 - integral2) / max(integral1, integral2));
-
-        if (abs_dif <= abs_er)
-            cout << "| Absolute error is okay\t";
-        else
-            cout << "| Absolute error is not okay\t";
-
-        cout << abs_dif << " vs " << abs_er << endl;
-
-        if (rel_dif <= rel_er)
-            cout << "| Relative error is okay\t";
-        else
-            cout << "| Relative error is not okay\t";
-        cout << rel_dif << " vs " << rel_er << endl;
-
-        auto start_time_reading = get_current_time_fenced();
-        for (int i = 0; i < num_of_threads; ++i) {
-            threads[i] = thread(thread_integration, x, x + interval_x, y0, y1, m, pr, &integral);
-            x += interval_x;
-        }
-
-        for (int j = 0; j < num_of_threads; ++j) {
-            threads[j].join();
-        }
-
-        auto finish_time = get_current_time_fenced();
-        auto total_time = finish_time - start_time_reading;
-//        chrono::duration<double, milli> the_time = total_time;
-        cout << " -------------------------------------\n| Time: " << to_us(total_time)
-             << " ms\n -------------------------------------" << endl;
-
-        double integ = integration(x0, x1, y0, y1, m, pr);
-        ofstream result;
-        result.open("result.txt");
-        result << "| Threads result: " << integral << "\n|-----------------------------" << endl;
-        result << "| Function result: " << integ << "\n|-----------------------------" << endl;
-        result << "| Absolute error: " << abs_dif << endl;
-        result << "| Relative error: " << rel_dif << "\n|-----------------------------" << endl;
-        result << "| Time: " << total_time.count() << " ms\n -----------------------------" << endl;
-
-        cout << "\t|  THREADS result: " << integral << endl;
-        cout << "\t|-----------------------------\n";
-        cout << "\t| FUNCTION result: " << integ << "\n\t -----------------------------" << endl;
+        MPI_Finalize();
+        return 0;
     }
-    return 0;
 }
