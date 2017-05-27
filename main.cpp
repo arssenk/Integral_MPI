@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 
+
 using namespace std;
 
 mutex mx;
@@ -110,11 +111,10 @@ map<string, string> read_config(string filename) {
 
 int main()
 {
-
     string filename;
     cout << "Please enter name of configuration file with extension '.txt':";
     cin >> filename;
-    filename = "config.txt";
+//    filename = "config.txt";
     map<string, string> mp = read_config(filename);
     double abs_er, rel_er, x0, x1, y0, y1;
     int m, num_of_threads;
@@ -129,7 +129,7 @@ int main()
         num_of_threads = get_param<int>("threads", mp);
 
         thread threads[num_of_threads];
-        double pr = 1E-4;
+        double pr = 1E-3;
 
         double integral = 0;
         double interval_x = (x1 - x0) / num_of_threads;
@@ -185,11 +185,11 @@ int main()
         double integ = integration(x0, x1, y0, y1, m, pr);
         ofstream result;
         result.open("result.txt");
-            result << "| Threads result: " << integral << "\n|-----------------------------" << endl;
-            result << "| Function result: " << integ << "\n|-----------------------------" << endl;
-            result << "| Absolute error: " << abs_dif << endl;
-            result << "| Relative error: " << rel_dif << "\n|-----------------------------" << endl;
-            result << "| Time: " << total_time.count() << " ms\n -----------------------------" << endl;
+        result << "| Threads result: " << integral << "\n|-----------------------------" << endl;
+        result << "| Function result: " << integ << "\n|-----------------------------" << endl;
+        result << "| Absolute error: " << abs_dif << endl;
+        result << "| Relative error: " << rel_dif << "\n|-----------------------------" << endl;
+        result << "| Time: " << total_time.count() << " ms\n -----------------------------" << endl;
 
         cout << "\t|  THREADS result: " << integral << endl;
         cout << "\t|-----------------------------\n";
