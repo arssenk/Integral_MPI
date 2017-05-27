@@ -112,9 +112,9 @@ map<string, string> read_config(string filename) {
 int main()
 {
     string filename;
-    cout << "Please enter name of configuration file with extension '.txt':";
-    cin >> filename;
-//    filename = "config.txt";
+//    cout << "Please enter name of configuration file with extension '.txt':";
+//    cin >> filename;
+    filename = "config.txt";
     map<string, string> mp = read_config(filename);
     double abs_er, rel_er, x0, x1, y0, y1;
     int m, num_of_threads;
