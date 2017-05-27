@@ -105,7 +105,7 @@ int main()
     MPI_Comm_size(MPI_COMM_WORLD, &commsize);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Get_processor_name(procname, &len);
-
+    double  res;
     if (rank == 0){
         string filename;
         filename = "config.txt";
@@ -177,7 +177,7 @@ int main()
 #ifdef PRINT_PARTS
             printf("%2i: %10i - %10i\n", 0, from_to[0], max_number);
 #endif // PRINT_PARTS
-            double  res = integration(from_to[0], from_to[1]*commsize, from_to[2], from_to[3] * commsize,
+            res = integration(from_to[0], from_to[1]*commsize, from_to[2], from_to[3] * commsize,
                                       (int) (from_to[4] * commsize), pr);//Cast not shure
 #ifdef PRINT_PARTS
             printf("Recv from %2i: %10i\n", 0, res);
