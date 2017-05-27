@@ -167,7 +167,7 @@ int main()
             for(int i = 1; i<commsize; ++i)
             {
                 printf("%2i: X:%10i - %10i; Y:%10i - %10i. M/commsize: %10i\n", i, from_to[0], from_to[1], from_to[2], from_to[3], from_to[4]);
-                MPI_Send(from_to, 6, MPI_UNSIGNED_DOUBLE, i, 0, MPI_COMM_WORLD);
+                MPI_Send(from_to, 6, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
                 from_to[0] = from_to[1]; //Може треба додавати 0.0001
                 from_to[1] = from_to[0] + x1/commsize;
                 from_to[2] = from_to[3];
@@ -186,7 +186,7 @@ int main()
             for(int i = 1; i<commsize; ++i)
             {
                 unsigned double tr;
-                MPI_Recv(&tr, 1, MPI_UNSIGNED_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&tr, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 #ifdef PRINT_PARTS
                 printf("Recv from %2i: %10i\n", i, tr);
 #endif // PRINT_PARTS
@@ -199,9 +199,9 @@ int main()
         {
             double start_time = MPI_Wtime();
             unsigned double from_to[5]= {};
-            MPI_Recv(from_to, 6, MPI_UNSIGNED_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(from_to, 6, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             res = integration(from_to[0], from_to[1], from_to[2], from_to[3], from_to[4], from_to[5]);
-            MPI_Send(&res, 1, MPI_UNSIGNED_DOUBLE, 0, 0, MPI_COMM_WORLD);
+            MPI_Send(&res, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
             printf("Process %d/%d execution time: %.6f\n", rank, commsize, MPI_Wtime() - start_time);
         }
 
