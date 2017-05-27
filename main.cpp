@@ -9,7 +9,7 @@
 #include <mpi.h>
 
 using namespace std;
-
+double func_calculation(int m, double s, double sd);
 
 double func_calculation(int m, double x1, double x2) {
     double sum1 = 0;
