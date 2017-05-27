@@ -162,7 +162,7 @@ int main()
             else
                 cout << "| Relative error is not okay\t";
             cout << rel_dif << " vs " << rel_er << endl;
-            unsigned double from_to[] = {x0, x1/commsize, y0, y1/commsize, m/commsize, pr};
+            double from_to[] = {x0, x1/commsize, y0, y1/commsize, m/commsize, pr};
             double start_time = MPI_Wtime();
             for(int i = 1; i<commsize; ++i)
             {
@@ -185,7 +185,7 @@ int main()
 #endif // PRINT_PARTS
             for(int i = 1; i<commsize; ++i)
             {
-                unsigned double tr;
+                double tr;
                 MPI_Recv(&tr, 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 #ifdef PRINT_PARTS
                 printf("Recv from %2i: %10i\n", i, tr);
@@ -198,7 +198,7 @@ int main()
     }else
         {
             double start_time = MPI_Wtime();
-            unsigned double from_to[5]= {};
+            double from_to[5]= {};
             MPI_Recv(from_to, 6, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             res = integration(from_to[0], from_to[1], from_to[2], from_to[3], from_to[4], from_to[5]);
             MPI_Send(&res, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
