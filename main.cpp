@@ -39,7 +39,6 @@ double func_calculation(int m, double x1, double x2) {
 }
 
 double integration(double x0, double x, double y0, double y, int m, double pr) {
-    assert (m >= 5);
     double sum = 0;
     for (double i = x0; i <= x; i += pr) {
         for (double j = y0; j <= y; j += pr) {
