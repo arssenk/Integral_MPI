@@ -103,13 +103,9 @@ int main()
     MPI_Get_processor_name(procname, &len);
     double  res;
     if (rank == 0){
-        string filename;
-        filename = "config.txt";
-        map<string, string> mp = read_config(filename);
         double abs_er, rel_er, x0, x1, y0, y1;
 
         int m;
-        if (mp.size() != 0) {
             abs_er = 0.001;
             rel_er = 0.001;
             x0 = 0;
@@ -203,5 +199,5 @@ int main()
 
         MPI_Finalize();
         return 0;
-    }
+
 }
