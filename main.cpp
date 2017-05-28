@@ -19,18 +19,6 @@ double func_calculation(int m, double x1, double x2) {
     g = -sum1 * sum2;
 
     return g;
-//    double g,sum;
-//    int j;
-//    for (int i = -2; i <= 2; ++i)
-//    {
-//        j = i;
-//        sum += 1 / (5 * (i + 2) + j + 3 + pow(x1 - 16* j,6) + pow(x2 - 16* i,6));
-//    }
-//
-//    g = pow(0.002 + sum, -1);
-//
-//    return g;
-
 }
 
 double integration(double x0, double x, double y0, double y, int m, double pr) {
@@ -102,8 +90,6 @@ int main() {
         double from_to[] = {x0, x1 / commsize, y0, y1 / commsize, m / commsize, pr};
         double start_time = MPI_Wtime();
         for (int i = 1; i < commsize; ++i) {
-            printf("%2i: X:%10i - %10i; Y:%10i - %10i. M/commsize: %10i\n", i, from_to[0], from_to[1], from_to[2],
-                   from_to[3], from_to[4]);
             MPI_Send(from_to, 6, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
             from_to[0] = from_to[1]; //Може треба додавати 0.0001
             from_to[1] = from_to[0] + x1 / commsize;
